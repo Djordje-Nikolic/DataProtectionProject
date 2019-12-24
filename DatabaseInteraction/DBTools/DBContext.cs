@@ -47,7 +47,7 @@ namespace ZIProject.DatabaseInteraction.DBTools
 
             string sqlQuery = "INSERT INTO User(Username, Password, LeftoverSpace) VALUES (@Username, @Password, @LeftoverSpace); SELECT last_insert_rowid();";
 
-            int newId;
+            int newId = -1;
             try
             {
                 newId = int.Parse(Connection.ExecuteScalar(sqlQuery, new { userInfo.Username, userInfo.Password, userInfo.LeftoverSpace }).ToString());
@@ -166,7 +166,7 @@ namespace ZIProject.DatabaseInteraction.DBTools
 
             string sqlQuery = "INSERT INTO File(Name, UserID, HashValue) VALUES (@Name, @UserID, @HashValue); SELECT last_insert_rowid();";
 
-            int newId;
+            int newId = -1;
             try
             {
                 newId = int.Parse(Connection.ExecuteScalar(sqlQuery, new { fileInfo.Name, fileInfo.UserID, fileInfo.HashValue }).ToString());
@@ -200,6 +200,22 @@ namespace ZIProject.DatabaseInteraction.DBTools
             {
                 return false;
             }
+        }
+        public FileInfo CheckForFile(string filename, int userId)
+        {
+            string sqlQuery = "SELECT * FROM File WHERE UserID = @userId AND Name = @filename;";
+
+            FileInfo result = null;
+            try
+            {
+                result = Connection.Query<FileInfo>(sqlQuery, new { userId, filename}).FirstOrDefault();
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Error fecthing existing file.", e);
+            }
+
+            return result;
         }
         public void RemoveFile(int fileId)
         {
