@@ -9,6 +9,9 @@ using System.Collections.Specialized;
 using System.Web;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Activation;
+using Newtonsoft.Json;
+using System.Text;
+using System.ServiceModel.Web;
 
 namespace ZIProject.MyCloudStore
 {
@@ -20,7 +23,7 @@ namespace ZIProject.MyCloudStore
     {
         //Instead of throwing exceptions I should be sending messages
 
-        public IEnumerable<RemoteFileInfo> GetAllFiles()
+        public Stream GetAllFiles()
         {
             SessionInfo sessionInfo = SessionManager.Instance.CheckForSession(GetChannelIdentification());
             if (sessionInfo == null || sessionInfo.LoggedInUser == null)
@@ -53,7 +56,10 @@ namespace ZIProject.MyCloudStore
                 context.Dispose();
             }
 
-            return result;
+            string toreturn = JsonConvert.SerializeObject(result);
+            byte[] resultBytes = Encoding.UTF8.GetBytes(toreturn);
+            WebOperationContext.Current.OutgoingResponse.ContentType = "text/plain";
+            return new MemoryStream(resultBytes);
         }
 
         public bool Login(string username, string password)
@@ -105,7 +111,8 @@ namespace ZIProject.MyCloudStore
             }
         }
 
-        public void UploadFile(Stream fileStream)
+        //should be changed so that file length is programatically determined
+        public void UploadFile(string filename, string hashValue, string length, Stream fileStream)
         {
             SessionInfo sessionInfo = SessionManager.Instance.CheckForSession(GetChannelIdentification());
             if (sessionInfo == null || sessionInfo.LoggedInUser == null)
@@ -113,18 +120,45 @@ namespace ZIProject.MyCloudStore
                 throw new InvalidOperationException("Cannot upload files when the user isn't logged in.");
             }
 
-            NameValueCollection PostParameters = HttpUtility.ParseQueryString(new StreamReader(fileStream).ReadToEnd());
-            string filename = PostParameters["filename"];
-            string hashValue = PostParameters["hashvalue"];
-            //var img = PostParameters["File"];
-
             var fileInfo = new DatabaseInteraction.Models.FileInfo(filename, hashValue);
 
             try
             {
                 using (var context = new DBContext())
                 {
+                    //Determine file size
+                    long fileSize = int.Parse(length);
+
+                    //Check if user has leftover space for this file (TODO)
+                    if (sessionInfo.LoggedInUser.LeftoverSpace < fileSize)
+                    {
+                        throw new InvalidOperationException("User doesn't have enough leftover allocated space to upload the desired file.");
+                    }
+
+                    //Add the file record to the database
                     context.TryAddFile(fileInfo, sessionInfo.LoggedInUser);
+
+                    //Update user leftover space
+                    context.UpdateUserLeftoverSpace(sessionInfo.LoggedInUser.ID, sessionInfo.LoggedInUser.LeftoverSpace - fileSize);
+
+                    try
+                    {
+                        //Upload file
+                        if (!FileManager.SaveFile(fileInfo, fileStream, fileSize))
+                        {
+                            //If file upload fails, revert changes in the database
+                            context.RemoveFile(fileInfo.ID);
+                            context.UpdateUserLeftoverSpace(sessionInfo.LoggedInUser.ID, sessionInfo.LoggedInUser.LeftoverSpace + fileSize);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        //If file upload fails, revert changes in the database
+                        context.RemoveFile(fileInfo.ID);
+                        context.UpdateUserLeftoverSpace(sessionInfo.LoggedInUser.ID, sessionInfo.LoggedInUser.LeftoverSpace + fileSize);
+
+                        throw new Exception("File manager error.", e);
+                    }
                 }
             }
             catch (Exception e)
@@ -149,8 +183,11 @@ namespace ZIProject.MyCloudStore
 
                     if (file != null)
                     {
-                        string path = file.GetFilePath();
-                        return new FileStream(path, FileMode.Open);
+                        WebOperationContext.Current.OutgoingResponse.ContentType = "application/octet-stream";
+
+                        Stream result = FileManager.RetrieveFile(file);
+
+                        return result;
                     }
                     else
                     {
@@ -189,6 +226,11 @@ namespace ZIProject.MyCloudStore
             }
 
 
+        }
+
+        public void Logout()
+        {
+            SessionManager.Instance.RemoveSession(GetChannelIdentification());
         }
     }
 }

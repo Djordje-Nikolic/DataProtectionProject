@@ -18,7 +18,8 @@ namespace ZIProject.DatabaseInteraction.Models
                 throw new ArgumentOutOfRangeException("Entered name is invalid.");
             }
 
-            if (string.IsNullOrWhiteSpace(hashValue) || hashValue.Length != 40)
+            //wrati ovu proveru posle
+            if (string.IsNullOrWhiteSpace(hashValue) /*|| hashValue.Length != 40*/)
             {
                 throw new ArgumentOutOfRangeException("Entered hash value is invalid.");
             }

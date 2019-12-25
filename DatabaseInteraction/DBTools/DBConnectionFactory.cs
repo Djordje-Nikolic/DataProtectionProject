@@ -9,6 +9,8 @@ namespace ZIProject.DatabaseInteraction.DBTools
         public static readonly string DBDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "MyCloudStore\\Database\\");
         public static readonly string DBPath = Path.Combine(DBDirectory, "Data.db");
 
+        private static bool seeded = false;
+
         public static SQLiteConnection CreateConnection()
         {
             SQLiteConnection connection;
@@ -20,14 +22,17 @@ namespace ZIProject.DatabaseInteraction.DBTools
 
                 connection = new SQLiteConnection($"DataSource={DBPath};Version=3;");
                 connection.Open();
-
-                DBSeeder.Seed(connection);
-
             }
             else
             {
                 connection = new SQLiteConnection($"DataSource={DBPath};Version=3;");
                 connection.Open();
+            }
+
+            if (!seeded)
+            {
+                DBSeeder.Seed(connection);
+                seeded = true;
             }
 
             return connection;

@@ -61,7 +61,7 @@ namespace ZIProject.DatabaseInteraction.DBTools
         }
         public bool CheckUserCredentials(UserInfo userInfo)
         {
-            string sqlQuery = "SELECT * User WHERE Username = @Username;";
+            string sqlQuery = "SELECT * FROM User WHERE Username = @Username;";
 
             IEnumerable<UserInfo> result;
             try
@@ -92,6 +92,19 @@ namespace ZIProject.DatabaseInteraction.DBTools
                 throw new InvalidOperationException("This user doesn't exist.");
             }
         }
+        public void UpdateUserLeftoverSpace(int userId, long newSpace)
+        {
+            string updateUser = "UPDATE User SET LeftoverSpace = @newSpace WHERE ID = @userId; ";
+
+            try
+            {
+                Connection.Execute(updateUser, new { newSpace, userId });
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Error updating user.", e);
+            }
+        }
         public void RemoveUser(int userId)
         {
             string removeUser = "DELETE FROM [User] WHERE ID=@userId;";
@@ -101,7 +114,7 @@ namespace ZIProject.DatabaseInteraction.DBTools
             }
             catch (Exception e)
             {
-                throw new Exception("Error updating removing user.", e);
+                throw new Exception("Error removing user.", e);
             }
         }
         internal bool CheckForUser(int userId)
@@ -170,7 +183,7 @@ namespace ZIProject.DatabaseInteraction.DBTools
             try
             {
                 newId = int.Parse(Connection.ExecuteScalar(sqlQuery, new { fileInfo.Name, fileInfo.UserID, fileInfo.HashValue }).ToString());
-                userInfo.ID = newId;
+                fileInfo.ID = newId;
             }
             catch (Exception e)
             {

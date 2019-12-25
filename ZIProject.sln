@@ -7,6 +7,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZIProject.MyCloudStore", "Z
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseInteraction", "DatabaseInteraction\DatabaseInteraction.csproj", "{F5484B74-4FBE-41DC-B37E-328D52F26769}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZIProject.Client", "ZIProject.Client\ZIProject.Client.csproj", "{B0BE24DC-A27C-481B-8AA8-15EE43FFA83E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6F059510-BC04-4827-BAA9-7B0468141394} = {6F059510-BC04-4827-BAA9-7B0468141394}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +26,10 @@ Global
 		{F5484B74-4FBE-41DC-B37E-328D52F26769}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5484B74-4FBE-41DC-B37E-328D52F26769}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F5484B74-4FBE-41DC-B37E-328D52F26769}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0BE24DC-A27C-481B-8AA8-15EE43FFA83E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0BE24DC-A27C-481B-8AA8-15EE43FFA83E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0BE24DC-A27C-481B-8AA8-15EE43FFA83E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0BE24DC-A27C-481B-8AA8-15EE43FFA83E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

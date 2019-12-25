@@ -34,12 +34,17 @@ namespace ZIProject.MyCloudStore
             if (string.IsNullOrWhiteSpace(identification) || userInfo == null)
                 throw new ArgumentNullException();
 
-            sessions.Remove(identification);
+            RemoveSession(identification);
 
             SessionInfo newSession = new SessionInfo() { LoggedInUser = userInfo, TimeLogged = DateTime.Now };
             sessions.Add(identification, newSession);
 
             return newSession;
+        }
+
+        public void RemoveSession(string identification)
+        {
+            sessions.Remove(identification);
         }
     }
 

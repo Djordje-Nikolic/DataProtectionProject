@@ -19,6 +19,7 @@ namespace ZIProject.DatabaseInteraction.DBTools
                                                             ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                                                             Name NVARCHAR(50) NOT NULL,
                                                             UserID INTEGER NOT NULL,
+                                                            HashValue NVARCHAR(50) NOT NULL,
                                                             FOREIGN KEY(UserID) REFERENCES [User](ID)
                                                                 ON UPDATE CASCADE
                                                                 ON DELETE RESTRICT

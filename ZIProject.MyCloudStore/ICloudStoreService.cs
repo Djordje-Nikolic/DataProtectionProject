@@ -14,31 +14,35 @@ namespace ZIProject.MyCloudStore
     public interface ICloudStoreService
     {
         [OperationContract]
+        [WebInvoke(BodyStyle = WebMessageBodyStyle.Wrapped)]
         bool Register(string username, string password);
 
         [OperationContract]
+        [WebInvoke(BodyStyle = WebMessageBodyStyle.Wrapped)]
         bool Login(string username, string password);
 
         [OperationContract]
-        void UploadFile(System.IO.Stream fileStream);
+        void Logout();
 
         [OperationContract]
+        [WebInvoke(Method = "POST", UriTemplate = "UploadFile/{filename}/{hashValue}/{length}", BodyStyle = WebMessageBodyStyle.Bare)]
+        void UploadFile(string filename, string hashValue, string length, System.IO.Stream fileStream);
+
+        [OperationContract]
+        [WebGet(UriTemplate = "DownloadFile/{fileName}", BodyStyle = WebMessageBodyStyle.Bare)]
         System.IO.Stream DownloadFile(string fileName);
 
         [OperationContract]
-        IEnumerable<RemoteFileInfo> GetAllFiles();
+        [WebGet(UriTemplate = "files", BodyStyle = WebMessageBodyStyle.Bare)]
+        System.IO.Stream GetAllFiles();
     }
 
-    [DataContract]
     public class RemoteFileInfo
     {
-        [DataMember]
-        public int ID;
+        public int ID { get; set; }
 
-        [DataMember]
-        public string Name;
+        public string Name { get; set; }
 
-        [DataMember]
-        public string HashValue;
+        public string HashValue { get; set; }
     }
 }
