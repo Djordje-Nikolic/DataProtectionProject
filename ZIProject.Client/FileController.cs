@@ -23,6 +23,10 @@ namespace ZIProject.Client
             if (!File.Exists(CryptoDataLocation))
             {
                 File.Create(CryptoDataLocation);
+				OneTimePadCrypter otp = new OneTimePadCrypter(Encoding.Unicode.GetBytes("defaultsifra"));
+				byte[] cryptoFileBytes = File.ReadAllBytes(CryptoDataLocation);
+                byte[] encryptedCryptoFileBytes = otp.Encrypt(cryptoFileBytes);
+                File.WriteAllBytes(CryptoDataLocation, encryptedCryptoFileBytes);
             }
         }
 
@@ -103,7 +107,7 @@ namespace ZIProject.Client
                 {
                     using (var writer = new StreamWriter(stream))
                     {
-                        writer.WriteLine($"{filePath} : {answer.Choice.ToString()} : {Encoding.UTF8.GetString(answer.Key)} : {answer.Depad.ToString()}");
+                        writer.WriteLine($"{filePath} ::: {answer.Choice.ToString()} ::: {Encoding.UTF8.GetString(answer.Key)} ::: {answer.Depad.ToString()}");
                     }
                 }
                 cryptoFileBytes = File.ReadAllBytes(CryptoDataLocation);
