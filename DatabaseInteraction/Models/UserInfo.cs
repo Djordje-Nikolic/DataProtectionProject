@@ -17,8 +17,7 @@ namespace ZIProject.DatabaseInteraction.Models
                 throw new ArgumentOutOfRangeException("Entered username is invalid.");
             }
 
-            //posle vratiti ovu proveru
-            if (string.IsNullOrWhiteSpace(password) /*|| password.Length != 40*/)
+            if (string.IsNullOrWhiteSpace(password) || password.Length != 40)
             {
                 throw new ArgumentOutOfRangeException("Entered password is invalid.");
             }

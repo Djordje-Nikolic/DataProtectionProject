@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ZIProject.MyCloudStore;
+using ZIProject.Client.InputForms;
 
 namespace ZIProject.Client
 {
@@ -60,7 +61,13 @@ namespace ZIProject.Client
         {
             if (openFileDialogUpload.ShowDialog() == DialogResult.OK)
             {
-                fileController.RequestFileUpload(openFileDialogUpload.FileName);
+                ChooseCrypto chooseCrypto = new ChooseCrypto(true);
+                if (chooseCrypto.ShowDialog() == DialogResult.OK)
+                {
+
+                    fileController.RequestFileUpload(openFileDialogUpload.FileName, chooseCrypto.Answer);
+
+                }
             }
         }
 
@@ -70,9 +77,14 @@ namespace ZIProject.Client
             {
                 var fileInfo = (RemoteFileInfo)dataGridViewFiles.SelectedRows[0].DataBoundItem;
 
-                if (folderBrowserDialogDownloadLocation.ShowDialog() == DialogResult.OK)
+                ChooseCrypto chooseCrypto = new ChooseCrypto(false);
+
+                if (chooseCrypto.ShowDialog() == DialogResult.OK)
                 {
-                    fileController.RequestFileDownload(fileInfo.Name, folderBrowserDialogDownloadLocation.SelectedPath);
+                    if (folderBrowserDialogDownloadLocation.ShowDialog() == DialogResult.OK)
+                    {
+                        fileController.RequestFileDownload(fileInfo.Name, folderBrowserDialogDownloadLocation.SelectedPath, chooseCrypto.Answer, fileInfo.HashValue);
+                    }
                 }
             }
             else

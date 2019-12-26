@@ -93,6 +93,10 @@
             this.buttonLogout.UseVisualStyleBackColor = true;
             this.buttonLogout.Click += new System.EventHandler(this.buttonLogout_Click);
             // 
+            // openFileDialogUpload
+            // 
+            this.openFileDialogUpload.Title = "Choose the file you wish to upload";
+            // 
             // dataGridViewFiles
             // 
             this.dataGridViewFiles.AllowUserToAddRows = false;
@@ -107,6 +111,10 @@
             this.dataGridViewFiles.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dataGridViewFiles.Size = new System.Drawing.Size(776, 357);
             this.dataGridViewFiles.TabIndex = 6;
+            // 
+            // folderBrowserDialogDownloadLocation
+            // 
+            this.folderBrowserDialogDownloadLocation.Description = "Choose where to download the selected file";
             // 
             // FileForm
             // 

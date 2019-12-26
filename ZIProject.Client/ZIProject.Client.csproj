@@ -61,6 +61,12 @@
     <Compile Include="FileForm.Designer.cs">
       <DependentUpon>FileForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="InputForms\ChooseCrypto.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InputForms\ChooseCrypto.Designer.cs">
+      <DependentUpon>ChooseCrypto.cs</DependentUpon>
+    </Compile>
     <Compile Include="LoginForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -71,6 +77,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FileForm.resx">
       <DependentUpon>FileForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InputForms\ChooseCrypto.resx">
+      <DependentUpon>ChooseCrypto.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LoginForm.resx">
       <DependentUpon>LoginForm.cs</DependentUpon>
@@ -102,6 +111,10 @@
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CryptoCollection\CryptoCollection.csproj">
+      <Project>{e7c42baf-3760-4c2c-843a-860f33048065}</Project>
+      <Name>CryptoCollection</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ZIProject.MyCloudStore\ZIProject.MyCloudStore.csproj">
       <Project>{6f059510-bc04-4827-baa9-7b0468141394}</Project>
       <Name>ZIProject.MyCloudStore</Name>

@@ -17,7 +17,7 @@ namespace ZIProject.DatabaseInteraction.DBTools
         private static readonly string CreateFile = @"CREATE TABLE IF NOT EXISTS [File]
                                                         (
                                                             ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                                            Name NVARCHAR(50) NOT NULL,
+                                                            Name NVARCHAR(300) NOT NULL,
                                                             UserID INTEGER NOT NULL,
                                                             HashValue NVARCHAR(50) NOT NULL,
                                                             FOREIGN KEY(UserID) REFERENCES [User](ID)

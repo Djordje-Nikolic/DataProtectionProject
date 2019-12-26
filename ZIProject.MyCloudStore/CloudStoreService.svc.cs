@@ -12,6 +12,7 @@ using System.ServiceModel.Activation;
 using Newtonsoft.Json;
 using System.Text;
 using System.ServiceModel.Web;
+using CryptoCollection;
 
 namespace ZIProject.MyCloudStore
 {
@@ -49,7 +50,8 @@ namespace ZIProject.MyCloudStore
             }
             catch (Exception e)
             {
-                throw new Exception("Error fetching files.", e);
+                //Shouldnt throw exceptions
+                //throw new Exception("Error fetching files.", e);
             }
             finally
             {
@@ -64,7 +66,9 @@ namespace ZIProject.MyCloudStore
 
         public bool Login(string username, string password)
         {
-            UserInfo userInfo = new UserInfo(username, password);
+            SHA1Hasher sha1 = new SHA1Hasher();
+            sha1.ComputeHash(Encoding.Unicode.GetBytes(password));
+            UserInfo userInfo = new UserInfo(username, sha1.HashedString);
 
             try
             {
@@ -83,13 +87,18 @@ namespace ZIProject.MyCloudStore
             }
             catch (Exception e)
             {
-                throw new Exception("Error logging in.", e);
+                //Shouldnt throw exceptions
+                //throw new Exception("Error logging in.", e);
             }
+
+            return false;
         }
 
         public bool Register(string username, string password)
         {
-            UserInfo userInfo = new UserInfo(username, password);
+            SHA1Hasher sha1 = new SHA1Hasher();
+            sha1.ComputeHash(Encoding.Unicode.GetBytes(password));
+            UserInfo userInfo = new UserInfo(username, sha1.HashedString);
 
             try
             {
@@ -107,8 +116,11 @@ namespace ZIProject.MyCloudStore
             }
             catch (Exception e)
             {
-                throw new Exception("Error registering the user.", e);
+                //Shouldnt throw exceptions
+                //throw new Exception("Error registering the user.", e);
             }
+
+            return false;
         }
 
         //should be changed so that file length is programatically determined
@@ -183,7 +195,8 @@ namespace ZIProject.MyCloudStore
 
                     if (file != null)
                     {
-                        WebOperationContext.Current.OutgoingResponse.ContentType = "application/octet-stream";
+                        //WebOperationContext.Current.OutgoingResponse.ContentType = "application/octet-stream";
+                        WebOperationContext.Current.OutgoingResponse.ContentType = "text/plain";
 
                         Stream result = FileManager.RetrieveFile(file);
 

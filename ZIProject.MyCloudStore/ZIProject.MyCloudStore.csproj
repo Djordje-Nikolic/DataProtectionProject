@@ -94,6 +94,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CryptoCollection\CryptoCollection.csproj">
+      <Project>{E7C42BAF-3760-4C2C-843A-860F33048065}</Project>
+      <Name>CryptoCollection</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DatabaseInteraction\DatabaseInteraction.csproj">
       <Project>{f5484b74-4fbe-41dc-b37e-328d52f26769}</Project>
       <Name>DatabaseInteraction</Name>

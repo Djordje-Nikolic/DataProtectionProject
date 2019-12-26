@@ -13,13 +13,12 @@ namespace ZIProject.DatabaseInteraction.Models
         internal FileInfo() { ID = -1; UserID = -1; }
         public FileInfo(string name, string hashValue)
         {
-            if (string.IsNullOrWhiteSpace(name) || name.Length > 50)
+            if (string.IsNullOrWhiteSpace(name) || name.Length > 300)
             {
                 throw new ArgumentOutOfRangeException("Entered name is invalid.");
             }
 
-            //wrati ovu proveru posle
-            if (string.IsNullOrWhiteSpace(hashValue) /*|| hashValue.Length != 40*/)
+            if (string.IsNullOrWhiteSpace(hashValue) || hashValue.Length != 40)
             {
                 throw new ArgumentOutOfRangeException("Entered hash value is invalid.");
             }
