@@ -34,24 +34,26 @@ namespace Testing
             //sha1.ComputeHash(Encoding.UTF8.GetBytes(result));
             //string hashAfter = sha1.HashedString;
 
-            byte[] fileBytes = File.ReadAllBytes("C:\\cryptodata.txt");
-            sha1.ComputeHash(fileBytes);
+            //OneTimePadCrypter oneTimePadCrypter = new OneTimePadCrypter(Encoding.UTF8.GetBytes("sifrasifrasifras"));
+            //byte[] encryptedBytes = oneTimePadCrypter.Encrypt(Encoding.UTF8.GetBytes(data));
+            //byte[] fileBytes = oneTimePadCrypter.Decrypt(encryptedBytes);
+
+            byte[] bigArray = CryptoHelpers.ReadAllBytes("C:\\Users\\DjordjeNikolic\\Desktop\\Djole shit\\Cooking\\15591782_1328152383902883_659942100_n.jpg");
+            sha1.ComputeHash(bigArray);
             string hashBefore = sha1.HashedString;
 
-            //TEACrypter tEACrypter = new TEACrypter(Encoding.UTF8.GetBytes("sifrasifrasifras"));
-            //byte[] encryptedBytes = tEACrypter.Encrypt(TEACrypter.PadData(fileBytes));
-            //fileBytes = TEACrypter.DepadData(tEACrypter.Decrypt(encryptedBytes));
             OneTimePadCrypter oneTimePadCrypter = new OneTimePadCrypter(Encoding.UTF8.GetBytes("sifrasifrasifras"));
-            byte[] encryptedBytes = oneTimePadCrypter.Encrypt(fileBytes);
-            fileBytes = oneTimePadCrypter.Decrypt(encryptedBytes);
+            byte[] encryptedBytes = oneTimePadCrypter.Encrypt(bigArray);
+            byte[] fileBytes = oneTimePadCrypter.Decrypt(encryptedBytes);
 
             sha1.ComputeHash(fileBytes);
             string hashAfter = sha1.HashedString;
 
-            File.WriteAllBytes("C:\\cryptodata.txt", fileBytes);
-
             if (hashAfter != hashBefore)
                 Console.WriteLine("Something wrong");
+            else
+                CryptoHelpers.WriteAllBytes("C:\\desktop.jpg", fileBytes);
+
         }
     }
 }

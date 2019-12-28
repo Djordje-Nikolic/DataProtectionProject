@@ -47,6 +47,25 @@ namespace ZIProject.MyCloudStore
             }
         }
 
+        internal static bool RemoveFile(DatabaseInteraction.Models.FileInfo fileInfo)
+        {
+            try
+            {
+                string path = fileInfo.GetFilePath();
+
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         private static void CreateDirectoryIfNotExists(string filePath)
         {
             var directory = new System.IO.FileInfo(filePath).Directory;

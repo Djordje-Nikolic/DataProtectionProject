@@ -21,10 +21,7 @@ namespace CryptoCollection
             for (int j,i = 0; i < data.Length; i++)
             {
                 j = i % Pad.Length;
-                var sum = (int)data[i] + (int)Pad[j];
-                if (sum > 255)
-                    sum -= 255;
-                result[i] = (byte)sum;
+                result[i] = (byte)((uint)data[i] ^ (uint)Pad[j]);
             }
             return result;
         }
@@ -35,10 +32,7 @@ namespace CryptoCollection
             for (int j,i = 0; i < data.Length; i++)
             {
                 j = i % Pad.Length;
-                var dif = (int)data[i] - (int)Pad[j];
-                if (dif < 0)
-                    dif += 255;
-                result[i] = (byte)dif;
+                result[i] = (byte)((uint)data[i] ^ (uint)Pad[j]);
             }
             return result;
         }

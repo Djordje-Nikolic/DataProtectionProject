@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace CryptoCollection
 {
@@ -61,6 +62,48 @@ namespace CryptoCollection
                 Array.Copy(temp, 0, bytes, i * 4, 4);
             }
             return bytes;
+        }
+
+        public static byte[] ReadAllBytes(string filePath)
+        {
+            if (!File.Exists(filePath))
+            {
+                throw new ArgumentException("File doesn't exist.");
+            }
+
+            byte[] fileBytes = null;
+            using (var fileStream = File.OpenRead(filePath))
+            {
+                using (var binaryReader = new BinaryReader(fileStream, Encoding.UTF8))
+                {
+                    fileBytes = binaryReader.ReadBytes((int) fileStream.Length);
+                }
+            }
+
+            return fileBytes;
+        }
+
+        public static void WriteAllBytes(string filePath, byte[] fileBytes)
+        {
+            using (var fileStream = new FileStream(filePath, FileMode.OpenOrCreate))
+            {
+                using (var binaryWriter = new BinaryWriter(fileStream, Encoding.UTF8))
+                {
+                    binaryWriter.Write(fileBytes, 0, fileBytes.Length);
+                }
+            }
+        }
+
+        public static byte[] GenerateRandomByteArray(long length)
+        {
+            if (length <= 0)
+                throw new ArgumentOutOfRangeException();
+
+            Random random = new Random();
+            byte[] result = new byte[length];
+            random.NextBytes(result);
+
+            return result;
         }
     }
 }
