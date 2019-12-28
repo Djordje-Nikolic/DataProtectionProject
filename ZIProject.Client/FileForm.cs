@@ -15,10 +15,14 @@ namespace ZIProject.Client
     public partial class FileForm : Form
     {
         private FileController fileController;
+        private UserController userController;
 
-        public FileForm(ICloudStoreService cloudStoreClient)
+        public FileForm(ICloudStoreService cloudStoreClient, UserController userController)
         {
-            this.fileController = new FileController(cloudStoreClient);
+            this.userController = userController;
+            CryptionController cryptionController = new CryptionController(userController.RemoteUserInfo);
+
+            this.fileController = new FileController(cloudStoreClient, cryptionController);
             InitializeComponent();
 
             dataGridViewFiles.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
@@ -37,7 +41,7 @@ namespace ZIProject.Client
 
         private void Logout()
         {
-            fileController.LogoutUser();
+            userController.LogoutUser();
         }
 
         private void FileForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -61,11 +65,17 @@ namespace ZIProject.Client
         {
             if (openFileDialogUpload.ShowDialog() == DialogResult.OK)
             {
-                ChooseCrypto chooseCrypto = new ChooseCrypto(true);
+                ChooseCrypto chooseCrypto = new ChooseCrypto(DataDirection.Upload);
                 if (chooseCrypto.ShowDialog() == DialogResult.OK)
                 {
-
-                    fileController.RequestFileUpload(openFileDialogUpload.FileName, chooseCrypto.Answer);
+                    try
+                    {
+                        fileController.RequestFileUpload(openFileDialogUpload.FileName, chooseCrypto.Answer);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error: " + ex.GetFullMessage(), "Upload error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
 
                 }
             }
@@ -77,13 +87,15 @@ namespace ZIProject.Client
             {
                 var fileInfo = (RemoteFileInfo)dataGridViewFiles.SelectedRows[0].DataBoundItem;
 
-                ChooseCrypto chooseCrypto = new ChooseCrypto(false);
-
-                if (chooseCrypto.ShowDialog() == DialogResult.OK)
+                if (folderBrowserDialogDownloadLocation.ShowDialog() == DialogResult.OK)
                 {
-                    if (folderBrowserDialogDownloadLocation.ShowDialog() == DialogResult.OK)
+                    try
                     {
-                        fileController.RequestFileDownload(fileInfo.Name, folderBrowserDialogDownloadLocation.SelectedPath, chooseCrypto.Answer, fileInfo.HashValue);
+                        fileController.RequestFileDownload(fileInfo.Name, folderBrowserDialogDownloadLocation.SelectedPath, fileInfo.HashValue);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error: " + ex.GetFullMessage(), "Download error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }

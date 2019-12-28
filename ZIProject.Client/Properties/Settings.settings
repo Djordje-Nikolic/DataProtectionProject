@@ -1,7 +1,18 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)">
-  <Profiles>
-    <Profile Name="(Default)" />
-  </Profiles>
-  <Settings />
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ZIProject.Client.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="CryptionDataFilePath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\cryptodata.txt</Value>
+    </Setting>
+    <Setting Name="DataFileCryption" Type="CryptoCollection.CryptoChoices" Scope="User">
+      <Value Profile="(Default)">OneTimePad</Value>
+    </Setting>
+    <Setting Name="CryptionDataKey" Type="System.String" Scope="User">
+      <Value Profile="(Default)">dEfAuLtKeY</Value>
+    </Setting>
+    <Setting Name="DataFilePadded" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+  </Settings>
 </SettingsFile>

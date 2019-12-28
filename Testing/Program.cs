@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -16,22 +17,38 @@ namespace Testing
             SHA1Hasher sha1 = new SHA1Hasher();
             var sha11 = new SHA1CryptoServiceProvider();
 
-            byte[] hash1 = sha11.ComputeHash(input);
-            uint[] hash2 = sha1.ComputeHash(input);
+            //byte[] hash1 = sha11.ComputeHash(input);
+            //uint[] hash2 = sha1.ComputeHash(input);
 
-            Console.WriteLine(CryptoHelpers.byteArrayToString(hash1));
-            Console.WriteLine(sha1.HashedString);
+            //Console.WriteLine(CryptoHelpers.byteArrayToString(hash1));
+            //Console.WriteLine(sha1.HashedString);
 
-            string data = "pricam nesto";
-            sha1.ComputeHash(Encoding.UTF8.GetBytes(data));
+            //string data = "pricam nesto";
+            //sha1.ComputeHash(Encoding.UTF8.GetBytes(data));
+            //string hashBefore = sha1.HashedString;
+            //byte[] key = new byte[16] { 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76 };
+            //string key2 = Encoding.UTF8.GetString(key);
+            //TEACrypter tEACrypter = new TEACrypter(Encoding.UTF8.GetBytes(key2));
+            //var resultBytes = TEACrypter.DepadData(tEACrypter.Decrypt(tEACrypter.Encrypt(TEACrypter.PadData(Encoding.UTF8.GetBytes(data)))));
+            //string result = Encoding.UTF8.GetString(resultBytes);
+            //sha1.ComputeHash(Encoding.UTF8.GetBytes(result));
+            //string hashAfter = sha1.HashedString;
+
+            byte[] fileBytes = File.ReadAllBytes("C:\\cryptodata.txt");
+            sha1.ComputeHash(fileBytes);
             string hashBefore = sha1.HashedString;
-            byte[] key = new byte[16] { 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76 };
-            string key2 = Encoding.UTF8.GetString(key);
-            TEACrypter tEACrypter = new TEACrypter(Encoding.UTF8.GetBytes(key2));
-            var resultBytes = TEACrypter.DepadData(tEACrypter.Decrypt(tEACrypter.Encrypt(TEACrypter.PadData(Encoding.UTF8.GetBytes(data)))));
-            string result = Encoding.UTF8.GetString(resultBytes);
-            sha1.ComputeHash(Encoding.UTF8.GetBytes(result));
+
+            //TEACrypter tEACrypter = new TEACrypter(Encoding.UTF8.GetBytes("sifrasifrasifras"));
+            //byte[] encryptedBytes = tEACrypter.Encrypt(TEACrypter.PadData(fileBytes));
+            //fileBytes = TEACrypter.DepadData(tEACrypter.Decrypt(encryptedBytes));
+            OneTimePadCrypter oneTimePadCrypter = new OneTimePadCrypter(Encoding.UTF8.GetBytes("sifrasifrasifras"));
+            byte[] encryptedBytes = oneTimePadCrypter.Encrypt(fileBytes);
+            fileBytes = oneTimePadCrypter.Decrypt(encryptedBytes);
+
+            sha1.ComputeHash(fileBytes);
             string hashAfter = sha1.HashedString;
+
+            File.WriteAllBytes("C:\\cryptodata.txt", fileBytes);
 
             if (hashAfter != hashBefore)
                 Console.WriteLine("Something wrong");

@@ -16,7 +16,8 @@ namespace ZIProject.Client
 {
     public partial class LoginForm : Form
     {
-        ICloudStoreService proxy = null;
+        private UserController userController = null;
+        private ICloudStoreService proxy;
 
         public LoginForm()
         {
@@ -24,9 +25,25 @@ namespace ZIProject.Client
 
             WebChannelFactory<ICloudStoreService> factory = new WebChannelFactory<ICloudStoreService>(new Uri("http://localhost:56082/MyCloudStore/CloudStoreService.svc"));
             proxy = factory.CreateChannel();
+
+            userController = new UserController(proxy, this);
         }
 
-        private async void buttonLogin_Click(object sender, EventArgs e)
+        public async void TransitionToFileForm()
+        {
+            await Task.Delay(2500);
+
+            var fileForm = new FileForm(proxy, userController);
+            fileForm.Location = this.Location;
+            fileForm.StartPosition = FormStartPosition.Manual;
+            fileForm.FormClosing += delegate { this.Show(); };
+            fileForm.Show();
+
+            labelStatus.Text = "";
+            this.Hide();
+        }
+
+        private void buttonLogin_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(textBoxUsername.Text) || string.IsNullOrWhiteSpace(textBoxPassword.Text))
             {
@@ -36,20 +53,9 @@ namespace ZIProject.Client
 
             try
             {
-                if (proxy.Login(textBoxUsername.Text, textBoxPassword.Text))
+                if (userController.Login(textBoxUsername.Text, textBoxPassword.Text))
                 {
-                    labelStatus.Text = "Login successfull. Transitioning...";
-
-                    await Task.Delay(2500);
-
-                    var fileForm = new FileForm(proxy);
-                    fileForm.Location = this.Location;
-                    fileForm.StartPosition = FormStartPosition.Manual;
-                    fileForm.FormClosing += delegate { this.Show(); };
-                    fileForm.Show();
-
-                    labelStatus.Text = "";
-                    this.Hide();
+                    labelStatus.Text = "Login successful. Transitioning...";
                 }
                 else
                 {
@@ -58,7 +64,7 @@ namespace ZIProject.Client
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.GetFullMessage(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.GetFullMessage(), "Login error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -72,7 +78,7 @@ namespace ZIProject.Client
 
             try
             {
-                if (proxy.Register(textBoxUsername.Text, textBoxPassword.Text))
+                if (userController.Register(textBoxUsername.Text, textBoxPassword.Text))
                 {
                     labelStatus.Text = "Registration successful. You can now login.";
                 }
@@ -83,7 +89,7 @@ namespace ZIProject.Client
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.GetFullMessage(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.GetFullMessage(), "Registration error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

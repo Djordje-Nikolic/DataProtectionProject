@@ -1,36 +1,35 @@
 ﻿using System;
 using System.Windows.Forms;
+using CryptoCollection;
 
 namespace ZIProject.Client.InputForms
 {
-    public enum CryptoChoices
+    public enum DataDirection
     {
-        OneTimePad,
-        TEA,
-        ElGamal
+        Upload,
+        Download
     }
-    public struct CryptoChoice
-    {
-        public byte[] Key;
-        public CryptoChoices Choice;
-        public bool Depad;
-    }
+
     public partial class ChooseCrypto : Form
     {
         public CryptoChoice Answer;
-        public ChooseCrypto(bool isUpload = true)
+        public ChooseCrypto(DataDirection dir)
         {
             InitializeComponent();
 
-            if (!isUpload)
+            if (dir == DataDirection.Download)
             {
                 Text = "Choose a decryption algorithm";
                 checkBoxDepadChoice.Visible = true;
             }
-            else
+            else if (dir == DataDirection.Upload)
             {
                 Text = "Choose an encryption algorithm";
                 checkBoxDepadChoice.Visible = false;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException();
             }
         }
 

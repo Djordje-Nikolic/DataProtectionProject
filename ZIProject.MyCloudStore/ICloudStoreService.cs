@@ -19,7 +19,7 @@ namespace ZIProject.MyCloudStore
 
         [OperationContract]
         [WebInvoke(BodyStyle = WebMessageBodyStyle.Wrapped)]
-        bool Login(string username, string password);
+        RemoteUserInfo Login(string username, string password);
 
         [OperationContract]
         void Logout();
@@ -29,7 +29,7 @@ namespace ZIProject.MyCloudStore
         void UploadFile(string filename, string hashValue, string length, System.IO.Stream fileStream);
 
         [OperationContract]
-        [WebGet(UriTemplate = "DownloadFile/{fileName}", BodyStyle = WebMessageBodyStyle.Bare)]
+        [WebGet(UriTemplate = "DownloadFile/{fileName}", BodyStyle = WebMessageBodyStyle.Wrapped)]
         System.IO.Stream DownloadFile(string fileName);
 
         [OperationContract]
@@ -39,10 +39,16 @@ namespace ZIProject.MyCloudStore
 
     public class RemoteFileInfo
     {
-        public int ID { get; set; }
-
         public string Name { get; set; }
-
         public string HashValue { get; set; }
+    }
+
+    [DataContract]
+    public class RemoteUserInfo
+    {
+        [DataMember]
+        public string Username { get; set; }
+        [DataMember]
+        public long LeftoverSpace { get; set; }
     }
 }

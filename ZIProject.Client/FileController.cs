@@ -12,18 +12,15 @@ namespace ZIProject.Client
 {
     public class FileController
     {
-        private static string CryptoDataLocation = "C:\\cryptodata.txt";
         //private CloudStoreServiceClient cloudStoreClient;
         private ICloudStoreService proxy;
+        private CryptionController cryptionController;
 
-        public FileController(ICloudStoreService cloudStoreClient)
+        public FileController(ICloudStoreService cloudStoreClient, CryptionController cryptionController)
         {
             this.proxy = cloudStoreClient;
 
-            if (!File.Exists(CryptoDataLocation))
-            {
-                File.Create(CryptoDataLocation);
-            }
+            this.cryptionController = cryptionController;
         }
 
         public List<RemoteFileInfo> RequestAllUserFiles()
@@ -40,81 +37,57 @@ namespace ZIProject.Client
             return files;
         }
 
-        public void LogoutUser()
-        {
-            proxy.Logout();
-        }
-
-        public void RequestFileUpload(string filePath, InputForms.CryptoChoice answer)
+        public void RequestFileUpload(string filePath, CryptoChoice answer, bool replaceOnConflict = false)
         {
             string fileName = Path.GetFileName(filePath);
-            byte[] fileToSend = File.ReadAllBytes(filePath);
+            byte[] fileBytes = File.ReadAllBytes(filePath);
 
             SHA1Hasher sha1 = new SHA1Hasher();
-            sha1.ComputeHash(fileToSend);
+            sha1.ComputeHash(fileBytes);
             string hashValue = sha1.HashedString;
 
-            byte[] encryptedFile;
-            switch (answer.Choice)
+            byte[] encryptedBytes;
+            try
             {
-                case InputForms.CryptoChoices.OneTimePad:
-                    OneTimePadCrypter oneTimePadCrypter = new OneTimePadCrypter(answer.Key);
-                    encryptedFile = oneTimePadCrypter.Encrypt(fileToSend);
-                    break;
-                case InputForms.CryptoChoices.TEA:
-                    TEACrypter tea = new TEACrypter(answer.Key);
-                    if (TEACrypter.CheckIfDataNeedsPadding(fileToSend))
-                    {
-                        System.Windows.Forms.MessageBox.Show("Your file had to be padded! Remember to choose depading when downloading the file!");
-                        encryptedFile = tea.Encrypt(TEACrypter.PadData(fileToSend));
-                    }
-                    else
-                    {
-                        encryptedFile = tea.Encrypt(fileToSend);
-                    }
-                    break;
-                default:
-                    encryptedFile = fileToSend;
-                    break;
-
+                encryptedBytes = cryptionController.EncryptFile(fileName, fileBytes, answer, replaceOnConflict);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Couldn't encrypt the file: " + e.Message);
             }
 
-            string FileManagerServiceUrl = "http://localhost:56082/MyCloudStore/CloudStoreService.svc";
-            var serviceUrl = string.Format($"{FileManagerServiceUrl}/UploadFile/{fileName}/{hashValue}/{encryptedFile.Length}");
-            var request = (HttpWebRequest)WebRequest.Create(serviceUrl);
-            request.Method = "POST";
-            request.ContentType = "text/plain";
-
-            System.IO.Stream reqStream = request.GetRequestStream();
-            reqStream.Write(encryptedFile, 0, encryptedFile.Length);
-            reqStream.Close();
-
-            HttpWebResponse resp = (HttpWebResponse)request.GetResponse();
-            System.Windows.Forms.MessageBox.Show(string.Format("Client: Receive Response HTTP/{0} {1} {2}", resp.ProtocolVersion, (int)resp.StatusCode, resp.StatusDescription));
-
-
-            if (resp.StatusCode == HttpStatusCode.OK)
+            HttpWebResponse resp = null;
+            try
             {
-                OneTimePadCrypter otp = new OneTimePadCrypter(Encoding.Unicode.GetBytes("defaultsifra"));
-                byte[] cryptoFileBytes = File.ReadAllBytes(CryptoDataLocation);
-                byte[] decryptedCryptoFileBytes = otp.Decrypt(cryptoFileBytes);
-                File.WriteAllBytes(CryptoDataLocation, decryptedCryptoFileBytes);
-                using (var stream = new FileStream(CryptoDataLocation, FileMode.Append))
+                string FileManagerServiceUrl = "http://localhost:56082/MyCloudStore/CloudStoreService.svc";
+                var serviceUrl = string.Format($"{FileManagerServiceUrl}/UploadFile/{fileName}/{hashValue}/{encryptedBytes.Length}");
+                var request = (HttpWebRequest)WebRequest.Create(serviceUrl);
+                request.Method = "POST";
+                request.ContentType = "text/plain";
+
+                System.IO.Stream reqStream = request.GetRequestStream();
+                reqStream.Write(encryptedBytes, 0, encryptedBytes.Length);
+                reqStream.Close();
+
+                resp = (HttpWebResponse)request.GetResponse();
+                System.Windows.Forms.MessageBox.Show(string.Format("Client: Receive Response HTTP/{0} {1} {2}", resp.ProtocolVersion, (int)resp.StatusCode, resp.StatusDescription));
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Error uploading the file to the service: " + e.GetFullMessage());
+            }
+            finally
+            {
+                if (resp != null && resp.StatusCode != HttpStatusCode.OK)
                 {
-                    using (var writer = new StreamWriter(stream))
-                    {
-                        writer.WriteLine($"{filePath} : {answer.Choice.ToString()} : {Encoding.UTF8.GetString(answer.Key)} : {answer.Depad.ToString()}");
-                    }
+                    cryptionController.RemoveFileRecord(fileName);
                 }
-                cryptoFileBytes = File.ReadAllBytes(CryptoDataLocation);
-                byte[] encryptedCryptoFileBytes = otp.Encrypt(cryptoFileBytes);
-                File.WriteAllBytes(CryptoDataLocation, encryptedCryptoFileBytes);
-            }
 
-            resp.Dispose();
+                resp.Dispose();
+            }
         }
 
-        public void RequestFileDownload(string fileName, string directoryPath, InputForms.CryptoChoice answer, string supposedFileHash)
+        public void RequestFileDownload(string fileName, string directoryPath, string supposedFileHash)
         {
             string FileManagerServiceUrl = "http://localhost:56082/MyCloudStore/CloudStoreService.svc";
             var serviceUrl = string.Format($"{FileManagerServiceUrl}/DownloadFile/{fileName}");
@@ -132,35 +105,20 @@ namespace ZIProject.Client
                             return;
                         }
 
-                        byte[] fileBytes = ReadToEnd(fileStream);
+                        byte[] fileBytes = fileStream.ReadToEnd();
 
                         //decrypt bytes
                         byte[] decryptedFile;
-                        switch (answer.Choice)
+                        try
                         {
-                            case InputForms.CryptoChoices.OneTimePad:
-                                OneTimePadCrypter oneTimePadCrypter = new OneTimePadCrypter(answer.Key);
-                                decryptedFile = oneTimePadCrypter.Decrypt(fileBytes);
-                                break;
-                            case InputForms.CryptoChoices.TEA:
-                                TEACrypter tea = new TEACrypter(answer.Key);
-                                if (answer.Depad)
-                                {
-                                    System.Windows.Forms.MessageBox.Show("Your file was depaded.");
-                                    decryptedFile = tea.Decrypt(TEACrypter.DepadData(fileBytes));
-                                }
-                                else
-                                {
-                                    decryptedFile = tea.Decrypt(fileBytes);
-                                }
-                                break;
-                            default:
-                                decryptedFile = fileBytes;
-                                break;
-
+                            decryptedFile = cryptionController.DecryptFile(fileBytes, fileName);
+                        }
+                        catch (Exception e)
+                        {
+                            throw new Exception("Error decrypting the downloaded file: " + e.Message);
                         }
 
-                        //Compare hash
+                        //Compare hash (double check since the cryptionController already does this
                         SHA1Hasher sha1 = new SHA1Hasher();
                         sha1.ComputeHash(decryptedFile);
                         string hashValue = sha1.HashedString;
@@ -171,14 +129,10 @@ namespace ZIProject.Client
                         }
 
                         //save them to a location
-                        File.WriteAllBytes(Path.Combine(directoryPath, fileName), fileBytes);
+                        File.WriteAllBytes(Path.Combine(directoryPath, fileName), decryptedFile);
 
                         //open with adequate application
                         System.Diagnostics.Process.Start(Path.Combine(directoryPath, fileName));
-
-                        fileStream.Close();
-                        fileStream.Dispose();
-
                     }
 
                     System.Windows.Forms.MessageBox.Show(string.Format("Client: Receive Response HTTP/{0} {1} {2}", response.ProtocolVersion, (int)response.StatusCode, response.StatusDescription));
@@ -189,57 +143,6 @@ namespace ZIProject.Client
                 System.Windows.Forms.MessageBox.Show("Error downloading the file: " + e.GetFullMessage());
             }
         }
-
-        private static byte[] ReadToEnd(System.IO.Stream stream)
-        {
-            long originalPosition = 0;
-
-            if (stream.CanSeek)
-            {
-                originalPosition = stream.Position;
-                stream.Position = 0;
-            }
-
-            try
-            {
-                byte[] readBuffer = new byte[4096];
-
-                int totalBytesRead = 0;
-                int bytesRead;
-
-                while ((bytesRead = stream.Read(readBuffer, totalBytesRead, readBuffer.Length - totalBytesRead)) > 0)
-                {
-                    totalBytesRead += bytesRead;
-
-                    if (totalBytesRead == readBuffer.Length)
-                    {
-                        int nextByte = stream.ReadByte();
-                        if (nextByte != -1)
-                        {
-                            byte[] temp = new byte[readBuffer.Length * 2];
-                            Buffer.BlockCopy(readBuffer, 0, temp, 0, readBuffer.Length);
-                            Buffer.SetByte(temp, totalBytesRead, (byte)nextByte);
-                            readBuffer = temp;
-                            totalBytesRead++;
-                        }
-                    }
-                }
-
-                byte[] buffer = readBuffer;
-                if (readBuffer.Length != totalBytesRead)
-                {
-                    buffer = new byte[totalBytesRead];
-                    Buffer.BlockCopy(readBuffer, 0, buffer, 0, totalBytesRead);
-                }
-                return buffer;
-            }
-            finally
-            {
-                if (stream.CanSeek)
-                {
-                    stream.Position = originalPosition;
-                }
-            }
-        }
+        
     }
 }

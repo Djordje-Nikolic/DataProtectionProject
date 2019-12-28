@@ -36,6 +36,10 @@ namespace ZIProject.MyCloudStore
 
                 var fileName = Path.GetFileName(path);
                 return File.OpenRead(path);
+
+                //byte[] fileBytes = File.ReadAllBytes(path);
+
+                //return new MemoryStream(fileBytes);
             }
             catch (Exception e)
             {

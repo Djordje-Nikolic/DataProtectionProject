@@ -6,6 +6,12 @@ using System.Threading.Tasks;
 
 namespace CryptoCollection
 {
+    public enum CryptoChoices
+    {
+        OneTimePad,
+        TEA,
+        ElGamal
+    }
     public static class CryptoHelpers
     {
         public static uint Rotate(int numOfBits, uint word)

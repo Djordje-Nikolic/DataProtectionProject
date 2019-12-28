@@ -42,7 +42,6 @@ namespace ZIProject.MyCloudStore
                 foreach (var file in fileInfos)
                 {
                     tempFile = new RemoteFileInfo();
-                    tempFile.ID = file.ID;
                     tempFile.Name = file.Name;
                     tempFile.HashValue = file.HashValue;
                     result.Add(tempFile);
@@ -64,11 +63,13 @@ namespace ZIProject.MyCloudStore
             return new MemoryStream(resultBytes);
         }
 
-        public bool Login(string username, string password)
+        public RemoteUserInfo Login(string username, string password)
         {
+            RemoteUserInfo answer = null;
+
             SHA1Hasher sha1 = new SHA1Hasher();
             sha1.ComputeHash(Encoding.Unicode.GetBytes(password));
-            UserInfo userInfo = new UserInfo(username, sha1.HashedString);
+            UserInfo userInfo = new UserInfo(username, sha1.HashedString);           
 
             try
             {
@@ -77,11 +78,9 @@ namespace ZIProject.MyCloudStore
                     if (context.CheckUserCredentials(userInfo))
                     {
                         SessionManager.Instance.AddSession(GetChannelIdentification(), userInfo);
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
+                        answer = new RemoteUserInfo();
+                        answer.Username = userInfo.Username;
+                        answer.LeftoverSpace = userInfo.LeftoverSpace;
                     }
                 }
             }
@@ -91,7 +90,7 @@ namespace ZIProject.MyCloudStore
                 //throw new Exception("Error logging in.", e);
             }
 
-            return false;
+            return answer;
         }
 
         public bool Register(string username, string password)
