@@ -177,12 +177,12 @@ namespace ZIProject.DatabaseInteraction.DBTools
                 throw new InvalidOperationException("This file already exists in the user's allocated space.");
             }
 
-            string sqlQuery = "INSERT INTO File(Name, UserID, HashValue) VALUES (@Name, @UserID, @HashValue); SELECT last_insert_rowid();";
+            string sqlQuery = "INSERT INTO File(Name, UserID, HashValue, Length) VALUES (@Name, @UserID, @HashValue, @Length); SELECT last_insert_rowid();";
 
             int newId = -1;
             try
             {
-                newId = int.Parse(Connection.ExecuteScalar(sqlQuery, new { fileInfo.Name, fileInfo.UserID, fileInfo.HashValue }).ToString());
+                newId = int.Parse(Connection.ExecuteScalar(sqlQuery, new { fileInfo.Name, fileInfo.UserID, fileInfo.HashValue, fileInfo.Length }).ToString());
                 fileInfo.ID = newId;
             }
             catch (Exception e)

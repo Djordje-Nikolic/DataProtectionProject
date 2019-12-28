@@ -60,7 +60,7 @@ namespace ZIProject.Client
             try
             {
                 string FileManagerServiceUrl = "http://localhost:56082/MyCloudStore/CloudStoreService.svc";
-                var serviceUrl = string.Format($"{FileManagerServiceUrl}/UploadFile/{fileName}/{hashValue}/{encryptedBytes.Length}");
+                var serviceUrl = string.Format($"{FileManagerServiceUrl}/UploadFile/{fileName}/{hashValue}");
                 var request = (HttpWebRequest)WebRequest.Create(serviceUrl);
                 request.Method = "POST";
                 request.ContentType = "text/plain";
@@ -140,7 +140,31 @@ namespace ZIProject.Client
             }
             catch (Exception e)
             {
-                System.Windows.Forms.MessageBox.Show("Error downloading the file: " + e.GetFullMessage());
+                throw new Exception("Error downloading the file: " + e.GetFullMessage());
+            }
+        }
+
+        public void RequestRemoveFile(string fileName)
+        {
+            string FileManagerServiceUrl = "http://localhost:56082/MyCloudStore/CloudStoreService.svc";
+            var serviceUrl = string.Format($"{FileManagerServiceUrl}/RemoveFile/{fileName}");
+            var request = (HttpWebRequest)WebRequest.Create(serviceUrl);
+
+            try
+            {
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                {              
+                    System.Windows.Forms.MessageBox.Show(string.Format("Client: Receive Response HTTP/{0} {1} {2}", response.ProtocolVersion, (int)response.StatusCode, response.StatusDescription));
+
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        cryptionController.RemoveFileRecord(fileName);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Error removing the file: " + e.GetFullMessage());
             }
         }
         

@@ -160,6 +160,11 @@ namespace ZIProject.Client
             byte[] encryptedDataFile = ReadDataFile();
             byte[] fileBytes = DecryptDataFile(encryptedDataFile);
 
+            if (fileBytes.Length < pattern.Length)
+            {
+                return null;
+            }
+
             int recordStartIndex = FindPattern(fileBytes, pattern);
 
             if (recordStartIndex != -1)
@@ -224,11 +229,14 @@ namespace ZIProject.Client
 
             if (recordStartIndex != -1)
             {
+                int newLineByteCount = Encoding.UTF8.GetBytes(Environment.NewLine).Length;
+
                 int recordEnd = FindRecordEnd(fileBytes, recordStartIndex);
 
-                byte[] newFileBytes = new byte[fileBytes.Length - (recordEnd - recordStartIndex)];
+                byte[] newFileBytes = new byte[fileBytes.Length - (recordEnd - recordStartIndex + newLineByteCount)];
                 Array.Copy(fileBytes, 0, newFileBytes, 0, recordStartIndex);
-                Array.Copy(fileBytes, recordEnd, newFileBytes, recordStartIndex, fileBytes.Length - recordEnd);
+                //we don't want to copy over the newline bytes
+                Array.Copy(fileBytes, recordEnd + newLineByteCount, newFileBytes, recordStartIndex, fileBytes.Length - recordEnd - newLineByteCount);
 
                 encryptedDataFile = EncryptDataFile(newFileBytes);
 
@@ -267,19 +275,15 @@ namespace ZIProject.Client
                     foundAt += falseBytes.Length;
                 }
             }
-            else
-            {
-                foundAt += newLineBytes.Length;
-            }
 
             return foundAt;
         }
         private int FindPattern(byte[] fileBytes, byte[] pattern, int startingIndex = 0)
         {
+            int foundAt = -1;
+
             if (startingIndex > fileBytes.Length - pattern.Length)
                 throw new ArgumentOutOfRangeException();
-
-            int foundAt = -1;
 
             for (int j,i = startingIndex; i < fileBytes.Length - pattern.Length; i++)
             {

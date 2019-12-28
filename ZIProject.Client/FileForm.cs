@@ -59,6 +59,9 @@ namespace ZIProject.Client
             dataGridViewFiles.AutoGenerateColumns = true;
             dataGridViewFiles.DataSource = fileController.RequestAllUserFiles();
             dataGridViewFiles.Refresh();
+
+            userController.RefreshUserInfo();
+            labelLeftoverSpace.Text = userController.RemoteUserInfo.LeftoverSpace.ToString() + " bytes";
         }
 
         private void buttonUploadFile_Click(object sender, EventArgs e)
@@ -97,6 +100,27 @@ namespace ZIProject.Client
                     {
                         MessageBox.Show("Error: " + ex.GetFullMessage(), "Download error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
+                }
+            }
+            else
+            {
+                MessageBox.Show("You have to select one of the uploaded files.");
+            }
+        }
+
+        private void buttonRemove_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewFiles.SelectedRows.Count > 0)
+            {
+                var fileInfo = (RemoteFileInfo)dataGridViewFiles.SelectedRows[0].DataBoundItem;
+
+                try
+                {
+                    fileController.RequestRemoveFile(fileInfo.Name);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error: " + ex.GetFullMessage(), "Removal error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             else

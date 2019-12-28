@@ -12,7 +12,7 @@ namespace ZIProject.Client
     {
         private ICloudStoreService proxy;
         private LoginForm loginForm = null;
-        public RemoteUserInfo RemoteUserInfo { get; private set; }
+        public RemoteUserInfo RemoteUserInfo { get; private set; } = null;
 
         public UserController(ICloudStoreService cloudStoreService, LoginForm form)
         { 
@@ -40,6 +40,21 @@ namespace ZIProject.Client
             catch (Exception ex)
             {
                 throw ex;
+            }
+        }
+
+        public void RefreshUserInfo()
+        {
+            try
+            {
+                if (RemoteUserInfo != null)
+                {
+                    RemoteUserInfo = proxy.RefreshUserInfo();
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Error refreshing user info: " + e.GetFullMessage());
             }
         }
 

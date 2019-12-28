@@ -44,6 +44,7 @@ namespace ZIProject.MyCloudStore
                     tempFile = new RemoteFileInfo();
                     tempFile.Name = file.Name;
                     tempFile.HashValue = file.HashValue;
+                    tempFile.Length = (int) file.Length;
                     result.Add(tempFile);
                 }
             }
@@ -123,7 +124,7 @@ namespace ZIProject.MyCloudStore
         }
 
         //should be changed so that file length is programatically determined
-        public void UploadFile(string filename, string hashValue, string length, Stream fileStream)
+        public void UploadFile(string filename, string hashValue, Stream fileStream)
         {
             SessionInfo sessionInfo = SessionManager.Instance.CheckForSession(GetChannelIdentification());
             if (sessionInfo == null || sessionInfo.LoggedInUser == null)
@@ -131,42 +132,44 @@ namespace ZIProject.MyCloudStore
                 throw new InvalidOperationException("Cannot upload files when the user isn't logged in.");
             }
 
-            var fileInfo = new DatabaseInteraction.Models.FileInfo(filename, hashValue);
-
             try
             {
                 using (var context = new DBContext())
                 {
                     //Determine file size
-                    long fileSize = int.Parse(length);
+                    byte[] fileBytes = FileManager.ReadToEnd(fileStream);
+                    long fileLength = fileBytes.Length;
+                    var fileInfo = new DatabaseInteraction.Models.FileInfo(filename, fileLength, hashValue);
 
                     //Check if user has leftover space for this file (TODO)
-                    if (sessionInfo.LoggedInUser.LeftoverSpace < fileSize)
+                    if (sessionInfo.LoggedInUser.LeftoverSpace < fileLength)
                     {
+                        context.RemoveFile(fileInfo.ID);
                         throw new InvalidOperationException("User doesn't have enough leftover allocated space to upload the desired file.");
+                    }
+                    else
+                    {
+                        context.UpdateUserLeftoverSpace(sessionInfo.LoggedInUser.ID, sessionInfo.LoggedInUser.LeftoverSpace - fileLength);
                     }
 
                     //Add the file record to the database
                     context.TryAddFile(fileInfo, sessionInfo.LoggedInUser);
 
-                    //Update user leftover space
-                    context.UpdateUserLeftoverSpace(sessionInfo.LoggedInUser.ID, sessionInfo.LoggedInUser.LeftoverSpace - fileSize);
-
                     try
                     {
-                        //Upload file
-                        if (!FileManager.SaveFile(fileInfo, fileStream, fileSize))
+
+                        if (!FileManager.SaveFile(fileInfo, fileBytes))
                         {
                             //If file upload fails, revert changes in the database
                             context.RemoveFile(fileInfo.ID);
-                            context.UpdateUserLeftoverSpace(sessionInfo.LoggedInUser.ID, sessionInfo.LoggedInUser.LeftoverSpace + fileSize);
+                            context.UpdateUserLeftoverSpace(sessionInfo.LoggedInUser.ID, sessionInfo.LoggedInUser.LeftoverSpace + fileLength);
                         }
                     }
                     catch (Exception e)
                     {
                         //If file upload fails, revert changes in the database
                         context.RemoveFile(fileInfo.ID);
-                        context.UpdateUserLeftoverSpace(sessionInfo.LoggedInUser.ID, sessionInfo.LoggedInUser.LeftoverSpace + fileSize);
+                        context.UpdateUserLeftoverSpace(sessionInfo.LoggedInUser.ID, sessionInfo.LoggedInUser.LeftoverSpace + fileLength);
 
                         throw new Exception("File manager error.", e);
                     }
@@ -243,6 +246,61 @@ namespace ZIProject.MyCloudStore
         public void Logout()
         {
             SessionManager.Instance.RemoveSession(GetChannelIdentification());
+        }
+
+        public void RemoveFile(string filename)
+        {
+            SessionInfo sessionInfo = SessionManager.Instance.CheckForSession(GetChannelIdentification());
+            if (sessionInfo == null || sessionInfo.LoggedInUser == null)
+            {
+                throw new InvalidOperationException("Cannot remove files when the user isn't logged in.");
+            }
+
+            try
+            {
+                using (var context = new DBContext())
+                {
+                    DatabaseInteraction.Models.FileInfo file = context.CheckForFile(filename, sessionInfo.LoggedInUser.ID);
+
+                    if (file != null)
+                    {
+                        context.RemoveFile(file.ID);
+                        FileManager.RemoveFile(file);
+                        context.UpdateUserLeftoverSpace(sessionInfo.LoggedInUser.ID, sessionInfo.LoggedInUser.LeftoverSpace + file.Length);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Error accessing a file.", e);
+            }
+        }
+
+        public RemoteUserInfo RefreshUserInfo()
+        {
+            SessionInfo sessionInfo = SessionManager.Instance.CheckForSession(GetChannelIdentification());
+            if (sessionInfo == null || sessionInfo.LoggedInUser == null)
+            {
+                throw new InvalidOperationException("Cannot refresh user info when the user isn't logged in.");
+            }
+
+            try
+            {
+                using (var context = new DBContext())
+                {
+                    context.CheckUserCredentials(sessionInfo.LoggedInUser);
+                }
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
+            RemoteUserInfo remoteUserInfo = new RemoteUserInfo();
+            remoteUserInfo.LeftoverSpace = sessionInfo.LoggedInUser.LeftoverSpace;
+            remoteUserInfo.Username = sessionInfo.LoggedInUser.Username;
+
+            return remoteUserInfo;
         }
     }
 }

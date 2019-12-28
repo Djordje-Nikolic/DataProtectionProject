@@ -22,15 +22,23 @@ namespace ZIProject.MyCloudStore
         RemoteUserInfo Login(string username, string password);
 
         [OperationContract]
+        [WebGet(BodyStyle = WebMessageBodyStyle.Wrapped)]
+        RemoteUserInfo RefreshUserInfo();
+
+        [OperationContract]
         void Logout();
 
         [OperationContract]
-        [WebInvoke(Method = "POST", UriTemplate = "UploadFile/{filename}/{hashValue}/{length}", BodyStyle = WebMessageBodyStyle.Bare)]
-        void UploadFile(string filename, string hashValue, string length, System.IO.Stream fileStream);
+        [WebInvoke(Method = "POST", UriTemplate = "UploadFile/{filename}/{hashValue}", BodyStyle = WebMessageBodyStyle.Bare)]
+        void UploadFile(string filename, string hashValue, System.IO.Stream fileStream);
 
         [OperationContract]
         [WebGet(UriTemplate = "DownloadFile/{fileName}", BodyStyle = WebMessageBodyStyle.Wrapped)]
         System.IO.Stream DownloadFile(string fileName);
+
+        [OperationContract]
+        [WebGet(UriTemplate = "RemoveFile/{filename}", BodyStyle = WebMessageBodyStyle.Wrapped)]
+        void RemoveFile(string filename);
 
         [OperationContract]
         [WebGet(UriTemplate = "files", BodyStyle = WebMessageBodyStyle.Bare)]
@@ -41,6 +49,7 @@ namespace ZIProject.MyCloudStore
     {
         public string Name { get; set; }
         public string HashValue { get; set; }
+        public int Length { get; set; }
     }
 
     [DataContract]

@@ -10,8 +10,9 @@ namespace ZIProject.DatabaseInteraction.Models
         public string Name { get; internal set; }
         public int UserID { get; internal set; }
         public string HashValue { get; internal set; }
+        public long Length { get; private set; }
         internal FileInfo() { ID = -1; UserID = -1; }
-        public FileInfo(string name, string hashValue)
+        public FileInfo(string name, long length, string hashValue)
         {
             if (string.IsNullOrWhiteSpace(name) || name.Length > 300)
             {
@@ -27,6 +28,7 @@ namespace ZIProject.DatabaseInteraction.Models
             Name = name;
             UserID = -1;
             HashValue = hashValue;
+            Length = length;
         }
         public string GetFilePath()
         {

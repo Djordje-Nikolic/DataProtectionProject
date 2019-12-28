@@ -38,21 +38,31 @@ namespace Testing
             //byte[] encryptedBytes = oneTimePadCrypter.Encrypt(Encoding.UTF8.GetBytes(data));
             //byte[] fileBytes = oneTimePadCrypter.Decrypt(encryptedBytes);
 
-            byte[] bigArray = CryptoHelpers.ReadAllBytes("C:\\Users\\DjordjeNikolic\\Desktop\\Djole shit\\Cooking\\15591782_1328152383902883_659942100_n.jpg");
-            sha1.ComputeHash(bigArray);
-            string hashBefore = sha1.HashedString;
+            //byte[] bigArray = CryptoHelpers.ReadAllBytes("C:\\Users\\DjordjeNikolic\\Desktop\\Djole shit\\Cooking\\15591782_1328152383902883_659942100_n.jpg");
+            //sha1.ComputeHash(bigArray);
+            //string hashBefore = sha1.HashedString;
 
-            OneTimePadCrypter oneTimePadCrypter = new OneTimePadCrypter(Encoding.UTF8.GetBytes("sifrasifrasifras"));
-            byte[] encryptedBytes = oneTimePadCrypter.Encrypt(bigArray);
-            byte[] fileBytes = oneTimePadCrypter.Decrypt(encryptedBytes);
+            //OneTimePadCrypter oneTimePadCrypter = new OneTimePadCrypter(Encoding.UTF8.GetBytes("sifrasifrasifras"));
+            //byte[] encryptedBytes = oneTimePadCrypter.Encrypt(bigArray);
+            //byte[] fileBytes = oneTimePadCrypter.Decrypt(encryptedBytes);
 
-            sha1.ComputeHash(fileBytes);
-            string hashAfter = sha1.HashedString;
+            //sha1.ComputeHash(fileBytes);
+            //string hashAfter = sha1.HashedString;
 
-            if (hashAfter != hashBefore)
-                Console.WriteLine("Something wrong");
-            else
-                CryptoHelpers.WriteAllBytes("C:\\desktop.jpg", fileBytes);
+            //if (hashAfter != hashBefore)
+            //    Console.WriteLine("Something wrong");
+            //else
+            //    CryptoHelpers.WriteAllBytes("C:\\desktop.jpg", fileBytes);
+
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine("nesto");
+
+            byte[] sbBytes = Encoding.UTF8.GetBytes(stringBuilder.ToString());
+
+            byte[] nestoBytes = Encoding.UTF8.GetBytes("nesto");
+
+            byte[] newlineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
+            Console.WriteLine(newlineBytes.Length);
 
         }
     }
